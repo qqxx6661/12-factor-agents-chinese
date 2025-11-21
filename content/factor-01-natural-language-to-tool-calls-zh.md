@@ -1,16 +1,27 @@
-[← 返回 README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+<!-- [机器翻译] 此文件由机器翻译生成，需要人工审校。原英文内容保留在文末供参考。 -->
 
-### 1. 自然语言到工具调用
+# 因素 1：自然语言到工具调用
 
-Agent 构建中最常见的模式之一是将自然语言转换为结构化工具调用。这是一个强大的模式，允许你构建能够推理任务并执行它们的 Agent。
+> **注意**: 本文档为机器翻译版本，可能包含翻译错误或不准确之处。建议参考文末的英文原文。
+
+---
+
+<details>
+<summary>📖 查看英文原文 (View Original English)</summary>
+
+[← Back to README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+
+### 1. Natural Language to Tool Calls 
+
+One of the most common patterns in agent building is to convert natural language to structured tool calls. This is a powerful pattern that allows you to build agents that can reason about tasks and execute them.
 
 ![110-natural-language-tool-calls](https://github.com/humanlayer/12-factor-agents/blob/main/img/110-natural-language-tool-calls.png)
 
-这种模式在原子化应用时，是将诸如以下短语的简单转换
+This pattern, when applied atomically, is the simple translation of a phrase like
 
-> 你能为 Terri 赞助 2 月 AI 折腾者聚会创建一个 750 美元的付款链接吗？
+> can you create a payment link for $750 to Terri for sponsoring the february AI tinkerers meetup? 
 
-转换为描述 Stripe API 调用的结构化对象，如
+to a structured object that describes a Stripe API call like
 
 ```json
 {
@@ -28,35 +39,38 @@ Agent 构建中最常见的模式之一是将自然语言转换为结构化工�
 }
 ```
 
-**注意**：实际上 Stripe API 有点复杂，一个[真实的 agent 做这件事](https://github.com/dexhorthy/mailcrew)（[视频](https://www.youtube.com/watch?v=f_cKnoPC_Oo)）会列出客户、列出产品、列出价格等来构建带有适当 id 的有效载荷，或在提示/上下文窗口中包含这些 id（我们稍后会看到它们是如何成为同一回事的！）
+**Note**: in reality the stripe API is a bit more complex, a [real agent that does this](https://github.com/dexhorthy/mailcrew) ([video](https://www.youtube.com/watch?v=f_cKnoPC_Oo)) would list customers, list products, list prices, etc to build this payload with the proper ids, or include those ids in the prompt/context window (we'll see below how those are kinda the same thing though!)
 
-从那里，确定性代码可以拾取有效载荷并对其进行处理。（更多内容参见[因子 3](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md)）
+From there, deterministic code can pick up the payload and do something with it. (More on this in [factor 3](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md))
 
 ```python
-# LLM 接受自然语言并返回结构化对象
+# The LLM takes natural language and returns a structured object
 nextStep = await llm.determineNextStep(
   """
-  为 Jeff 赞助 2 月 AI 折腾者聚会
-  创建一个 750 美元的付款链接
+  create a payment link for $750 to Jeff 
+  for sponsoring the february AI tinkerers meetup
   """
   )
 
-# 根据其函数处理结构化输出
+# Handle the structured output based on its function
 if nextStep.function == 'create_payment_link':
     stripe.paymentlinks.create(nextStep.parameters)
-    return  # 或者你想要的任何东西，见下文
+    return  # or whatever you want, see below
 elif nextStep.function == 'something_else':
-    # ... 更多情况
+    # ... more cases
     pass
-else:  # 模型没有调用我们知道的工具
-    # 做其他事情
+else:  # the model didn't call a tool we know about
+    # do something else
     pass
 ```
 
-**注意**：虽然一个完整的 agent 然后会接收 API 调用结果并与其循环，最终返回类似这样的内容
+**NOTE**: While a full agent would then receive the API call result and loop with it, eventually returning something like
 
-> 我已经成功为 Terri 赞助 2 月 AI 折腾者聚会创建了一个 750 美元的付款链接。这是链接：https://buy.stripe.com/test_1234567890
+> I've successfully created a payment link for $750 to Terri for sponsoring the february AI tinkerers meetup. Here's the link: https://buy.stripe.com/test_1234567890
 
-**相反**，我们实际上要在这里跳过这一步，并为另一个因子保存它，你可能想要也可能不想要也包含它（由你决定！）
+**Instead**, We're actually going to skip that step here, and save it for another factor, which you may or may not want to also incorporate (up to you!)
 
-[← 我们是如何走到这里的](https://github.com/humanlayer/12-factor-agents/blob/main/content/brief-history-of-software.md) | [拥有你的提示 →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md)
+[← How We Got Here](https://github.com/humanlayer/12-factor-agents/blob/main/content/brief-history-of-software.md) | [Own Your Prompts →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md)
+
+
+</details>

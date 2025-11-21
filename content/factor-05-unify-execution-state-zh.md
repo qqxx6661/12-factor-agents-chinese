@@ -1,39 +1,54 @@
-[← 返回 README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+<!-- [机器翻译] 此文件由机器翻译生成，需要人工审校。原英文内容保留在文末供参考。 -->
 
-### 5. 统一执行状态和业务状态
+# 因素 5：统一执行状态和业务状态
 
-即使在 AI 世界之外，许多基础设施系统也试图将"执行状态"与"业务状态"分离。对于 AI 应用程序，这可能涉及复杂的抽象来跟踪当前步骤、下一步、等待状态、重试计数等事项。这种分离创造了可能有价值的复杂性，但对于你的用例可能是过度设计。
+> **注意**: 本文档为机器翻译版本，可能包含翻译错误或不准确之处。建议参考文末的英文原文。
 
-一如既往，由你决定什么对你的应用程序是正确的。但不要认为你*必须*单独管理它们。
+---
 
-更明确地说：
+<details>
+<summary>📖 查看英文原文 (View Original English)</summary>
 
-- **执行状态**：当前步骤、下一步、等待状态、重试计数等。
-- **业务状态**：到目前为止在 agent 工作流程中发生的事情（例如 OpenAI 消息列表、工具调用和结果列表等）
+[← Back to README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
 
-如果可能的话，简化 - 尽可能统一这些。
+### 5. Unify execution state and business state
+
+Even outside the AI world, many infrastructure systems try to separate "execution state" from "business state". For AI apps, this might involve complex abstractions to track things like current step, next step, waiting status, retry counts, etc. This separation creates complexity that may be worthwhile, but may be overkill for your use case. 
+
+As always, it's up to you to decide what's right for your application. But don't think you *have* to manage them separately.
+
+More clearly:
+
+- **Execution state**: current step, next step, waiting status, retry counts, etc. 
+- **Business state**: What's happened in the agent workflow so far (e.g. list of OpenAI messages, list of tool calls and results, etc.)
+
+If possible, SIMPLIFY - unify these as much as possible. 
 
 [![155-unify-state](https://github.com/humanlayer/12-factor-agents/blob/main/img/155-unify-state-animation.gif)](https://github.com/user-attachments/assets/e5a851db-f58f-43d8-8b0c-1926c99fc68d)
 
-<details>
-<summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/155-unify-state-animation.gif">GIF 版本</a></summary>
 
-![155-unify-state](https://github.com/humanlayer/12-factor-agents/blob/main/img/155-unify-state-animation.gif)]
+<details>
+<summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/155-unify-state-animation.gif">GIF Version</a></summary>
+
+![155-unify-state](https://github.com/humanlayer/12-factor-agents/blob/main/img/155-unify-state-animation.gif)
 
 </details>
 
-实际上，你可以设计你的应用程序，以便可以从上下文窗口推断出所有执行状态。在许多情况下，执行状态（当前步骤、等待状态等）只是关于到目前为止发生的事情的元数据。
+In reality, you can engineer your application so that you can infer all execution state from the context window. In many cases, execution state (current step, waiting status, etc.) is just metadata about what has happened so far.
 
-你可能有一些不能放在上下文窗口中的东西，比如会话 ID、密码上下文等，但你的目标应该是最小化这些东西。通过采用[因子 3](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md)，你可以控制实际进入 LLM 的内容
+You may have things that can't go in the context window, like session ids, password contexts, etc, but your goal should be to minimize those things. By embracing [factor 3](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md) you can control what actually goes into the LLM 
 
-这种方法有几个好处：
+This approach has several benefits:
 
-1. **简单性**：所有状态的单一真相来源
-2. **序列化**：线程可以轻松序列化/反序列化
-3. **调试**：整个历史记录在一个地方可见
-4. **灵活性**：通过添加新事件类型轻松添加新状态
-5. **恢复**：可以通过加载线程从任何点恢复
-6. **分叉**：可以通过将线程的某个子集复制到新上下文/状态 ID 中在任何点分叉线程
-7. **人机界面和可观察性**：将线程转换为人类可读的 markdown 或丰富的 Web 应用程序 UI 非常简单
+1. **Simplicity**: One source of truth for all state
+2. **Serialization**: The thread is trivially serializable/deserializable
+3. **Debugging**: The entire history is visible in one place
+4. **Flexibility**: Easy to add new state by just adding new event types
+5. **Recovery**: Can resume from any point by just loading the thread
+6. **Forking**: Can fork the thread at any point by copying some subset of the thread into a new context / state ID
+7. **Human Interfaces and Observability**: Trivial to convert a thread into a human-readable markdown or a rich Web app UI
 
-[← 工具是结构化输出](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-04-tools-are-structured-outputs.md) | [启动/暂停/恢复 →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-06-launch-pause-resume.md)
+[← Tools Are Structured Outputs](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-04-tools-are-structured-outputs.md) | [Launch/Pause/Resume →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-06-launch-pause-resume.md)
+
+
+</details>

@@ -1,10 +1,23 @@
-[← 返回 README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+<!-- [机器翻译] 此文件由机器翻译生成，需要人工审校。原英文内容保留在文末供参考。 -->
 
-### 9. 将错误压缩到上下文窗口
+# 因素 9：将错误压缩到上下文窗口中
 
-这个有点短，但值得一提。Agent 的好处之一是"自我修复" - 对于短任务，LLM 可能调用失败的工具。好的 LLM 有相当好的机会读取错误消息或堆栈跟踪，并找出在后续工具调用中要更改的内容。
+> **注意**: 本文档为机器翻译版本，可能包含翻译错误或不准确之处。建议参考文末的英文原文。
 
-大多数框架都实现了这一点，但你可以在不做其他 11 个因子中的任何一个的情况下只做这一点。这是一个例子：
+---
+
+<details>
+<summary>📖 查看英文原文 (View Original English)</summary>
+
+[← Back to README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+
+### 9. Compact Errors into Context Window
+
+This one is a little short but is worth mentioning. One of these benefits of agents is "self-healing" - for short tasks, an LLM might call a tool that fails. Good LLMs have a fairly good chance of reading an error message or stack trace and figuring out what to change in a subsequent tool call.
+
+
+Most frameworks implement this, but you can do JUST THIS without doing any of the other 11 factors. Here's an example: 
+
 
 ```python
 thread = {"events": [initial_message]}
@@ -16,24 +29,24 @@ while True:
     "data": next_step,
   })
   try:
-    result = await handle_next_step(thread, next_step) # 我们的 switch 语句
+    result = await handle_next_step(thread, next_step) # our switch statement
   except Exception as e:
-    # 如果我们得到错误，我们可以将其添加到上下文窗口并重试
+    # if we get an error, we can add it to the context window and try again
     thread["events"].append({
       "type": 'error',
       "data": format_error(e),
     })
-    # 循环，或在这里做任何其他事情来尝试恢复
+    # loop, or do whatever else here to try to recover
 ```
 
-你可能想为特定工具调用实现一个 errorCounter，限制单个工具的尝试次数约为 3 次，或者任何其他对你的用例有意义的逻辑。
+You may want to implement an errorCounter for a specific tool call, to limit to ~3 attempts of a single tool, or whatever other logic makes sense for your use case. 
 
 ```python
 consecutive_errors = 0
 
 while True:
 
-  # ... 现有代码 ...
+  # ... existing code ...
 
   try:
     result = await handle_next_step(thread, next_step)
@@ -41,43 +54,46 @@ while True:
       "type": next_step.intent + '_result',
       data: result,
     })
-    # 成功！重置错误计数器
+    # success! reset the error counter
     consecutive_errors = 0
   except Exception as e:
     consecutive_errors += 1
     if consecutive_errors < 3:
-      # 进行循环并重试
+      # do the loop and try again
       thread["events"].append({
         "type": 'error',
         "data": format_error(e),
       })
     else:
-      # 跳出循环，重置上下文窗口的部分，升级给人类，或任何你想做的其他事情
+      # break the loop, reset parts of the context window, escalate to a human, or whatever else you want to do
       break
   }
 }
 ```
-
-达到某些连续错误阈值可能是[升级给人类](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md)的好地方，无论是通过模型决策还是通过确定性接管控制流。
+Hitting some consecutive-error-threshold might be a great place to [escalate to a human](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md), whether by model decision or via deterministic takeover of the control flow.
 
 [![195-factor-09-errors](https://github.com/humanlayer/12-factor-agents/blob/main/img/195-factor-09-errors.gif)](https://github.com/user-attachments/assets/cd7ed814-8309-4baf-81a5-9502f91d4043)
 
+
 <details>
-<summary>[GIF 版本](https://github.com/humanlayer/12-factor-agents/blob/main/img/195-factor-09-errors.gif)</summary>
+<summary>[GIF Version](https://github.com/humanlayer/12-factor-agents/blob/main/img/195-factor-09-errors.gif)</summary>
 
 ![195-factor-09-errors](https://github.com/humanlayer/12-factor-agents/blob/main/img/195-factor-09-errors.gif)
 
 </details>
 
-好处：
+Benefits:
 
-1. **自我修复**：LLM 可以读取错误消息并找出在后续工具调用中要更改的内容
-2. **持久**：即使一个工具调用失败，agent 也可以继续运行
+1. **Self-Healing**: The LLM can read the error message and figure out what to change in a subsequent tool call
+2. **Durable**: The agent can continue to run even if one tool call fails
 
-我相信你会发现，如果你这样做得太多，你的 agent 会开始失控，可能会一遍又一遍地重复同样的错误。
+I'm sure you will find that if you do this TOO much, your agent will start to spin out and might repeat the same error over and over again. 
 
-这就是[因子 8 - 拥有你的控制流](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md)和[因子 3 - 拥有你的上下文构建](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md)发挥作用的地方 - 你不需要只是把原始错误放回去，你可以完全重构它的表示方式，从上下文窗口中删除以前的事件，或者任何你发现有效的确定性事情来让 agent 回到正轨。
+That's where [factor 8 - own your control flow](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md) and [factor 3 - own your context building](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md) come in - you don't need to just put the raw error back on, you can completely restructure how it's represented, remove previous events from the context window, or whatever deterministic thing you find works to get an agent back on track. 
 
-但防止错误失控的第一方法是拥抱[因子 10 - 小而专注的 agent](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-10-small-focused-agents.md)。
+But the number one way to prevent error spin-outs is to embrace [factor 10 - small, focused agents](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-10-small-focused-agents.md).
 
-[← 拥有你的控制流](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md) | [小而专注的 Agent →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-10-small-focused-agents.md)
+[← Own Your Control Flow](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md) | [Small Focused Agents →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-10-small-focused-agents.md)
+
+
+</details>

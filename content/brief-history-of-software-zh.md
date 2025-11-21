@@ -1,3 +1,5 @@
+<!-- [机器翻译] 此文件由机器翻译生成，需要人工审校。 -->
+
 [← 返回 README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
 
 ## 完整版本：我们是如何走到今天的
@@ -5,6 +7,7 @@
 ### 你不必听信我的话
 
 无论你是 Agent 新手还是像我这样的老兵，我都要尝试说服你抛开对 AI Agent 的大部分既有认知，退一步，从第一性原理重新思考它们。（剧透一下，如果你没有注意到几周前 OpenAI 的 responses 发布，那么将更多 agent 逻辑推到 API 后面绝对不是正确的方向）
+
 
 ## Agent 就是软件，以及软件的简史
 
@@ -18,7 +21,7 @@
 
 ### 20 年前
 
-大约 20 年前，我们开始看到 DAG 编排器变得流行。我们说的是像 [Airflow](https://airflow.apache.org/)、[Prefect](https://www.prefect.io/) 这样的经典工具，一些前辈，以及一些更新的工具，比如（[dagster](https://dagster.io/)、[inggest](https://www.inngest.com/)、[windmill](https://www.windmill.dev/)）。这些都遵循相同的图模式，但增加了可观察性、模块化、重试、管理等好处。
+大约 20 年前，我们开始看到 DAG 编排器变得流行。我们说的是像 [Airflow](https://airflow.apache.org/)、[Prefect](https://www.prefect.io/) 这样的经典工具，一些前辈，以及一些更新的工具，比如（[dagster](https://dagster.io/)、[inngest](https://www.inngest.com/)、[windmill](https://www.windmill.dev/)）。这些都遵循相同的图模式，但增加了可观察性、模块化、重试、管理等好处。
 
 ![015-dag-orchestrators](https://github.com/humanlayer/12-factor-agents/blob/main/img/015-dag-orchestrators.png)
 
@@ -75,100 +78,193 @@ while True:
 <details>
 <summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif">GIF 版本</a></summary>
 
-![027-agent-loop-animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif)]
+![027-agent-loop-animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif)
 
 </details>
 
-生成的"物化" DAG 看起来会像这样：
+---
+
+<details>
+<summary>📖 查看英文原文 (View Original English)</summary>
+
+[← Back to README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+
+## The longer version: how we got here
+
+### You don't have to listen to me
+
+Whether you're new to agents or an ornery old veteran like me, I'm going to try to convince you to throw out most of what you think about AI Agents, take a step back, and rethink them from first principles. (spoiler alert if you didn't catch the OpenAI responses launch a few weeks back, but pushing MORE agent logic behind an API ain't it)
+
+
+## Agents are software, and a brief history thereof
+
+let's talk about how we got here
+
+### 60 years ago
+
+We're gonna talk a lot about Directed Graphs (DGs) and their Acyclic friends, DAGs. I'll start by pointing out that...well...software is a directed graph. There's a reason we used to represent programs as flow charts.
+
+![010-software-dag](https://github.com/humanlayer/12-factor-agents/blob/main/img/010-software-dag.png)
+
+### 20 years ago
+
+Around 20 years ago, we started to see DAG orchestrators become popular. We're talking classics like [Airflow](https://airflow.apache.org/), [Prefect](https://www.prefect.io/), some predecessors, and some newer ones like ([dagster](https://dagster.io/), [inggest](https://www.inngest.com/), [windmill](https://www.windmill.dev/)). These followed the same graph pattern, with the added benefit of observability, modularity, retries, administration, etc.
+
+![015-dag-orchestrators](https://github.com/humanlayer/12-factor-agents/blob/main/img/015-dag-orchestrators.png)
+
+### 10-15 years ago
+
+When ML models started to get good enough to be useful, we started to see DAGs with ML models sprinkled in. You might imagine steps like "summarize the text in this column into a new column" or "classify the support issues by severity or sentiment".
+
+![020-dags-with-ml](https://github.com/humanlayer/12-factor-agents/blob/main/img/020-dags-with-ml.png)
+
+But at the end of the day, it's still mostly the same good old deterministic software.
+
+### The promise of agents
+
+I'm not the first [person to say this](https://youtu.be/Dc99-zTMyMg?si=bcT0hIwWij2mR-40&t=73), but my biggest takeaway when I started learning about agents, was that you get to throw the DAG away. Instead of software engineers coding each step and edge case, you can give the agent a goal and a set of transitions:
+
+![025-agent-dag](https://github.com/humanlayer/12-factor-agents/blob/main/img/025-agent-dag.png)
+
+And let the LLM make decisions in real time to figure out the path
+
+![026-agent-dag-lines](https://github.com/humanlayer/12-factor-agents/blob/main/img/026-agent-dag-lines.png)
+
+The promise here is that you write less software, you just give the LLM the "edges" of the graph and let it figure out the nodes. You can recover from errors, you can write less code, and you may find that LLMs find novel solutions to problems.
+
+### Agents as loops
+
+Put another way, you've got this loop consisting of 3 steps:
+
+1. LLM determines the next step in the workflow, outputting structured json ("tool calling")
+2. Deterministic code executes the tool call
+3. The result is appended to the context window 
+4. repeat until the next step is determined to be "done"
+
+```python
+initial_event = {"message": "..."}
+context = [initial_event]
+while True:
+  next_step = await llm.determine_next_step(context)
+  context.append(next_step)
+
+  if (next_step.intent === "done"):
+    return next_step.final_answer
+
+  result = await execute_step(next_step)
+  context.append(result)
+```
+
+Our initial context is just the starting event (maybe a user message, maybe a cron fired, maybe a webhook, etc),
+and we ask the llm to choose the next step (tool) or to determine that we're done.
+
+Here's a multi-step example:
+
+[![027-agent-loop-animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif)](https://github.com/user-attachments/assets/3beb0966-fdb1-4c12-a47f-ed4e8240f8fd)
+
+<details>
+<summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif">GIF Version</a></summary>
+
+![027-agent-loop-animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif)
+
+</details>
+
+And the "materialized" DAG that was generated would look something like:
 
 ![027-agent-loop-dag](https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-dag.png)
 
-### "循环直到解决问题"模式的问题
+### The problem with this "loop until you solve it" pattern
 
-这种模式的最大问题：
+The biggest problems with this pattern:
 
-- 当上下文窗口变得太长时，Agent 会迷失方向 - 它们陷入困境，一遍又一遍地尝试同样的破损方法
-- 实际上就是这样，但这足以削弱这种方法
+- Agents get lost when the context window gets too long - they spin out trying the same broken approach over and over again
+- literally thats it, but that's enough to kneecap the approach
 
-即使你没有手工构建 Agent，你也可能在使用代理编码工具时看到过这种长上下文问题。它们在一段时间后就迷失了，你需要开始一个新的聊天。
+Even if you haven't hand-rolled an agent, you've probably seen this long-context problem in working with agentic coding tools. They just get lost after a while and you need to start a new chat.
 
-我甚至可能会提出一些我偶尔听到的观点，你也可能已经培养了自己的直觉：
+I'll even perhaps posit something I've heard in passing quite a bit, and that YOU probably have developed your own intuition around:
 
-> ### **即使模型支持越来越长的上下文窗口，你总是能通过小而专注的提示和上下文获得更好的结果**
+> ### **Even as models support longer and longer context windows, you'll ALWAYS get better results with a small, focused prompt and context**
 
-我交谈过的大多数构建者**将"工具调用循环"思想搁置一旁**，当他们意识到超过 10-20 轮的任何事情都会变成 LLM 无法恢复的大混乱。即使 Agent 90% 的时间都是对的，这离"足以放到客户手中"还差得很远。你能想象一个在 10% 的页面加载时崩溃的 Web 应用程序吗？
+Most builders I've talked to **pushed the "tool calling loop" idea to the side** when they realized that anything more than 10-20 turns becomes a big mess that the LLM can't recover from. Even if the agent gets it right 90% of the time, that's miles away from "good enough to put in customer hands". Can you imagine a web app that crashed on 10% of page loads?
 
-**2025-06-09 更新** - 我真的很喜欢 [@swyx](https://x.com/swyx/status/1932125643384455237) 的表述：
+**Update 2025-06-09** - I really like how [@swyx](https://x.com/swyx/status/1932125643384455237) put this:
 
-<a href="https://x.com/swyx/status/1932125643384455237"><img width="593" alt="Screenshot 2025-07-02 at 11 50 50 AM" src="https://github.com/user-attachments/assets/c7d94042-e4b9-4b87-87fd-55c7ff94bb3b" /></a>
+<a href="https://x.com/swyx/status/1932125643384455237"><img width="593" alt="Screenshot 2025-07-02 at 11 50 50 AM" src="https://github.com/user-attachments/assets/c7d94042-e4b9-4b87-87fd-55c7ff94bb3b" /></a>
 
-### 真正有效的方法 - 微 Agent
+### What actually works - micro agents
 
-我在野外**确实**经常看到的一件事是采用 Agent 模式并将其融入更广泛的、更确定性的 DAG 中。
+One thing that I **have** seen in the wild quite a bit is taking the agent pattern and sprinkling it into a broader more deterministic DAG. 
 
 ![micro-agent-dag](https://github.com/humanlayer/12-factor-agents/blob/main/img/028-micro-agent-dag.png)
 
-你可能会问 - "在这种情况下为什么还要使用 Agent？" - 我们稍后会讨论这个问题，但基本上，让语言模型管理范围明确的任务集合，可以轻松整合实时人类反馈，将其转换为工作流步骤，而不会陷入上下文错误循环。（[因子 1](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-01-natural-language-to-tool-calls.md)、[因子 3](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md)、[因子 7](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md)）。
+You might be asking - "why use agents at all in this case?" - we'll get into that shortly, but basically, having language models managing well-scoped sets of tasks makes it easy to incorporate live human feedback, translating it into workflow steps without spinning out into context error loops. ([factor 1](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-01-natural-language-to-tool-calls.md), [factor 3](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md) [factor 7](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md)).
 
-> #### 让语言模型管理范围明确的任务集合，可以轻松整合实时人类反馈...而不会陷入上下文错误循环
+> #### having language models managing well-scoped sets of tasks makes it easy to incorporate live human feedback...without spinning out into context error loops
 
-### 现实生活中的微 Agent 
+### A real life micro agent 
 
-这是一个例子，展示确定性代码如何运行一个负责处理部署中人在回路步骤的微 Agent。
+Here's an example of how deterministic code might run one micro agent responsible for handling the human-in-the-loop steps for deployment. 
 
 ![029-deploybot-high-level](https://github.com/humanlayer/12-factor-agents/blob/main/img/029-deploybot-high-level.png)
 
-* **人工** 将 PR 合并到 GitHub 主分支
-* **确定性代码** 部署到暂存环境
-* **确定性代码** 对暂存运行端到端（e2e）测试
-* **确定性代码** 交给 agent 进行生产部署，初始上下文："将 SHA 4af9ec0 部署到生产环境"
-* **Agent** 调用 `deploy_frontend_to_prod(4af9ec0)`
-* **确定性代码** 对此操作请求人工批准
-* **人工** 拒绝操作并反馈"你能先部署后端吗？"
-* **Agent** 调用 `deploy_backend_to_prod(4af9ec0)`
-* **确定性代码** 对此操作请求人工批准
-* **人工** 批准操作
-* **确定性代码** 执行后端部署
-* **Agent** 调用 `deploy_frontend_to_prod(4af9ec0)`
-* **确定性代码** 对此操作请求人工批准
-* **人工** 批准操作
-* **确定性代码** 执行前端部署
-* **Agent** 确定任务成功完成，我们完成了！
-* **确定性代码** 对生产环境运行端到端测试
-* **确定性代码** 任务完成，或者传递给回滚 agent 检查失败并可能回滚
+* **Human** Merges PR to GitHub main branch
+* **Deterministic Code** Deploys to staging env
+* **Deterministic Code** Runs end-to-end (e2e) tests against staging
+* **Deterministic Code** Hands to agent for prod deployment, with initial context: "deploy SHA 4af9ec0 to production"
+* **Agent** calls `deploy_frontend_to_prod(4af9ec0)`
+* **Deterministic code** requests human approval on this action
+* **Human** Rejects the action with feedback "can you deploy the backend first?"
+* **Agent** calls `deploy_backend_to_prod(4af9ec0)`
+* **Deterministic code** requests human approval on this action
+* **Human** approves the action
+* **Deterministic code** executed the backend deployment
+* **Agent** calls `deploy_frontend_to_prod(4af9ec0)`
+* **Deterministic code** requests human approval on this action
+* **Human** approves the action
+* **Deterministic code** executed the frontend deployment
+* **Agent** determines that the task was completed successfully, we're done!
+* **Deterministic code** run the end-to-end tests against production
+* **Deterministic code** task completed, OR pass to rollback agent to review failures and potentially roll back
 
 [![033-deploybot-animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/033-deploybot.gif)](https://github.com/user-attachments/assets/deb356e9-0198-45c2-9767-231cb569ae13)
 
 <details>
-<summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/033-deploybot.gif">GIF 版本</a></summary>
+<summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/033-deploybot.gif">GIF Version</a></summary>
 
-![033-deploybot-animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/033-deploybot.gif)]
+![033-deploybot-animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/033-deploybot.gif)
 
 </details>
 
-这个例子基于我们在 Humanlayer 发布的一个真实的[开源 agent 来管理我们的部署](https://github.com/got-agents/agents/tree/main/deploybot-ts) - 这是我上周与它的真实对话：
+This example is based on a real life [OSS agent we've shipped to manage our deployments at Humanlayer](https://github.com/got-agents/agents/tree/main/deploybot-ts) - here is a real conversation I had with it last week:
 
 ![035-deploybot-conversation](https://github.com/humanlayer/12-factor-agents/blob/main/img/035-deploybot-conversation.png)
 
-我们没有给这个 agent 一大堆工具或任务。LLM 的主要价值在于解析人类的纯文本反馈并提出更新的行动方案。我们尽可能地隔离任务和上下文，以保持 LLM 专注于小型的 5-10 步工作流程。
 
-这是另一个[更经典的支持/聊天机器人演示](https://x.com/chainlit_io/status/1858613325921480922)。
+We haven't given this agent a huge pile of tools or tasks. The primary value in the LLM is parsing the human's plaintext feedback and proposing an updated course of action. We isolate tasks and contexts as much as possible to keep the LLM focused on a small, 5-10 step workflow.
 
-### 那么 Agent 到底是什么？
+Here's another [more classic support / chatbot demo](https://x.com/chainlit_io/status/1858613325921480922).
 
-- **提示** - 告诉 LLM 如何行为，以及它可用的"工具"。提示的输出是一个描述工作流程中下一步的 JSON 对象（"工具调用"或"函数调用"）。（[因子 2](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md)）
-- **switch 语句** - 基于 LLM 返回的 JSON，决定如何处理它。（[因子 8](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md) 的一部分）
-- **累积上下文** - 存储已发生的步骤列表及其结果（[因子 3](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md)）
-- **for 循环** - 直到 LLM 发出某种"终端"工具调用（或纯文本响应），将 switch 语句的结果添加到上下文窗口并要求 LLM 选择下一步。（[因子 8](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md)）
+### So what's an agent really?
+
+- **prompt** - tell an LLM how to behave, and what "tools" it has available. The output of the prompt is a JSON object that describe the next step in the workflow (the "tool call" or "function call"). ([factor 2](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md))
+- **switch statement** - based on the JSON that the LLM returns, decide what to do with it. (part of [factor 8](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md))
+- **accumulated context** - store the list of steps that have happened and their results ([factor 3](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md))
+- **for loop** - until the LLM emits some sort of "Terminal" tool call (or plaintext response), add the result of the switch statement to the context window and ask the LLM to choose the next step. ([factor 8](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md))
 
 ![040-4-components](https://github.com/humanlayer/12-factor-agents/blob/main/img/040-4-components.png)
 
-在"deploybot"示例中，我们从拥有控制流程和上下文累积中获得了几个好处：
+In the "deploybot" example, we gain a couple benefits from owning the control flow and context accumulation:
 
-- 在我们的 **switch 语句** 和 **for 循环** 中，我们可以劫持控制流程来暂停人工输入或等待长时间运行任务的完成
-- 我们可以轻松地序列化**上下文**窗口以便暂停+恢复
-- 在我们的**提示**中，我们可以大幅优化我们如何向 LLM 传递指令和"到目前为止发生了什么"
+- In our **switch statement** and **for loop**, we can hijack control flow to pause for human input or to wait for completion of long-running tasks
+- We can trivially serialize the **context** window for pause+resume
+- In our **prompt**, we can optimize the heck out of how we pass instructions and "what happened so far" to the LLM
 
-[第二部分](https://github.com/humanlayer/12-factor-agents/blob/main/README.md#12-factor-agents) 将**正式化这些模式**，以便它们可以应用于向任何软件项目添加令人印象深刻的 AI 功能，而无需完全投入传统的"AI agent"实现/定义。
 
-[因子 1 - 自然语言到工具调用 →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-01-natural-language-to-tool-calls.md)
+[Part II](https://github.com/humanlayer/12-factor-agents/blob/main/README.md#12-factor-agents) will **formalize these patterns** so they can be applied to add impressive AI features to any software project, without needing to go all in on conventional implementations/definitions of "AI agent".
+
+
+[Factor 1 - Natural Language to Tool Calls →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-01-natural-language-to-tool-calls.md)
+
+
+</details>
