@@ -1,56 +1,56 @@
-[← 返回 README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+[← Back to README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
 
-## 完整版本：我们是如何走到今天的
+## The longer version: how we got here
 
-### 你不必听信我的话
+### You don't have to listen to me
 
-无论你是 Agent 新手还是像我这样的老兵，我都要尝试说服你抛开对 AI Agent 的大部分既有认知，退一步，从第一性原理重新思考它们。（剧透一下，如果你没有注意到几周前 OpenAI 的 responses 发布，那么将更多 agent 逻辑推到 API 后面绝对不是正确的方向）
+Whether you're new to agents or an ornery old veteran like me, I'm going to try to convince you to throw out most of what you think about AI Agents, take a step back, and rethink them from first principles. (spoiler alert if you didn't catch the OpenAI responses launch a few weeks back, but pushing MORE agent logic behind an API ain't it)
 
 
-## Agent 就是软件，以及软件的简史
+## Agents are software, and a brief history thereof
 
-让我们聊聊我们是如何走到今天的
+let's talk about how we got here
 
-### 60 年前
+### 60 years ago
 
-我们将大量讨论有向图（DG）及其无环的朋友们，DAG。我首先要指出的是...好吧...软件就是有向图。我们曾经用流程图来表示程序是有原因的。
+We're gonna talk a lot about Directed Graphs (DGs) and their Acyclic friends, DAGs. I'll start by pointing out that...well...software is a directed graph. There's a reason we used to represent programs as flow charts.
 
 ![010-software-dag](https://github.com/humanlayer/12-factor-agents/blob/main/img/010-software-dag.png)
 
-### 20 年前
+### 20 years ago
 
-大约 20 年前，我们开始看到 DAG 编排器变得流行。我们说的是像 [Airflow](https://airflow.apache.org/)、[Prefect](https://www.prefect.io/) 这样的经典工具，一些前辈，以及一些更新的工具，比如（[dagster](https://dagster.io/)、[inggest](https://www.inngest.com/)、[windmill](https://www.windmill.dev/)）。这些都遵循相同的图模式，但增加了可观察性、模块化、重试、管理等好处。
+Around 20 years ago, we started to see DAG orchestrators become popular. We're talking classics like [Airflow](https://airflow.apache.org/), [Prefect](https://www.prefect.io/), some predecessors, and some newer ones like ([dagster](https://dagster.io/), [inggest](https://www.inngest.com/), [windmill](https://www.windmill.dev/)). These followed the same graph pattern, with the added benefit of observability, modularity, retries, administration, etc.
 
 ![015-dag-orchestrators](https://github.com/humanlayer/12-factor-agents/blob/main/img/015-dag-orchestrators.png)
 
-### 10-15 年前
+### 10-15 years ago
 
-当 ML 模型开始变得足够好用时，我们开始看到 DAG 中穿插着 ML 模型。你可能想象这样的步骤："将此列中的文本总结到新列中"或"按严重性或情感对支持问题进行分类"。
+When ML models started to get good enough to be useful, we started to see DAGs with ML models sprinkled in. You might imagine steps like "summarize the text in this column into a new column" or "classify the support issues by severity or sentiment".
 
 ![020-dags-with-ml](https://github.com/humanlayer/12-factor-agents/blob/main/img/020-dags-with-ml.png)
 
-但归根结底，它仍然主要是同样的好的旧确定性软件。
+But at the end of the day, it's still mostly the same good old deterministic software.
 
-### Agent 的承诺
+### The promise of agents
 
-我不是第一个[这样说的人](https://youtu.be/Dc99-zTMyMg?si=bcT0hIwWij2mR-40&t=73)，但当我开始学习 Agent 时，我最大的收获是你可以丢弃 DAG。与其让软件工程师编码每个步骤和边界情况，你可以给 Agent 一个目标和一组转换：
+I'm not the first [person to say this](https://youtu.be/Dc99-zTMyMg?si=bcT0hIwWij2mR-40&t=73), but my biggest takeaway when I started learning about agents, was that you get to throw the DAG away. Instead of software engineers coding each step and edge case, you can give the agent a goal and a set of transitions:
 
 ![025-agent-dag](https://github.com/humanlayer/12-factor-agents/blob/main/img/025-agent-dag.png)
 
-然后让 LLM 实时做出决策来找出路径
+And let the LLM make decisions in real time to figure out the path
 
 ![026-agent-dag-lines](https://github.com/humanlayer/12-factor-agents/blob/main/img/026-agent-dag-lines.png)
 
-这里的承诺是你写更少的软件，你只需要给 LLM 图的"边"，让它找出节点。你可以从错误中恢复，可以写更少的代码，并且你可能会发现 LLM 找到解决问题的新颖方案。
+The promise here is that you write less software, you just give the LLM the "edges" of the graph and let it figure out the nodes. You can recover from errors, you can write less code, and you may find that LLMs find novel solutions to problems.
 
-### Agent 作为循环
+### Agents as loops
 
-换句话说，你有这个由 3 个步骤组成的循环：
+Put another way, you've got this loop consisting of 3 steps:
 
-1. LLM 确定工作流程中的下一步，输出结构化 json（"工具调用"）
-2. 确定性代码执行工具调用
-3. 结果被追加到上下文窗口
-4. 重复直到下一步被确定为"完成"
+1. LLM determines the next step in the workflow, outputting structured json ("tool calling")
+2. Deterministic code executes the tool call
+3. The result is appended to the context window 
+4. repeat until the next step is determined to be "done"
 
 ```python
 initial_event = {"message": "..."}
@@ -66,21 +66,21 @@ while True:
   context.append(result)
 ```
 
-我们的初始上下文只是起始事件（可能是用户消息，可能是 cron 触发，可能是 webhook 等），
-我们让 LLM 选择下一步（工具）或确定我们已经完成。
+Our initial context is just the starting event (maybe a user message, maybe a cron fired, maybe a webhook, etc),
+and we ask the llm to choose the next step (tool) or to determine that we're done.
 
-这是一个多步骤示例：
+Here's a multi-step example:
 
 [![027-agent-loop-animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif)](https://github.com/user-attachments/assets/3beb0966-fdb1-4c12-a47f-ed4e8240f8fd)
 
 <details>
-<summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif">GIF 版本</a></summary>
+<summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif">GIF Version</a></summary>
 
 ![027-agent-loop-animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-animation.gif)
 
 </details>
 
-生成的"物化" DAG 看起来会像这样：
+And the "materialized" DAG that was generated would look something like:
 
 ![027-agent-loop-dag](https://github.com/humanlayer/12-factor-agents/blob/main/img/027-agent-loop-dag.png)
 

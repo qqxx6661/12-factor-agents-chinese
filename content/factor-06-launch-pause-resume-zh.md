@@ -1,26 +1,42 @@
-[← 返回 README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+<!-- [机器翻译] 此文件由机器翻译生成，需要人工审校。原英文内容保留在文末供参考。 -->
 
-### 6. 使用简单 API 启动/暂停/恢复
+# 因素 6：通过简单API启动/暂停/恢复
 
-Agent 只是程序，我们对如何启动、查询、恢复和停止它们有期望。
+> **注意**: 本文档为机器翻译版本，可能包含翻译错误或不准确之处。建议参考文末的英文原文。
+
+---
+
+<details>
+<summary>📖 查看英文原文 (View Original English)</summary>
+
+[← Back to README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+
+### 6. Launch/Pause/Resume with simple APIs
+
+Agents are just programs, and we have things we expect from how to launch, query, resume, and stop them.
 
 [![pause-resume animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/165-pause-resume-animation.gif)](https://github.com/user-attachments/assets/feb1a425-cb96-4009-a133-8bd29480f21f)
 
 <details>
-<summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/165-pause-resume-animation.gif">GIF 版本</a></summary>
+<summary><a href="https://github.com/humanlayer/12-factor-agents/blob/main/img/165-pause-resume-animation.gif">GIF Version</a></summary>
 
-![pause-resume animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/165-pause-resume-animation.gif)]
+![pause-resume animation](https://github.com/humanlayer/12-factor-agents/blob/main/img/165-pause-resume-animation.gif)
 
 </details>
 
-用户、应用程序、管道和其他 Agent 应该能够轻松地通过简单的 API 启动 Agent。
 
-Agent 及其编排确定性代码应该能够在需要长时间运行的操作时暂停 Agent。
+It should be easy for users, apps, pipelines, and other agents to launch an agent with a simple API.
 
-像 webhook 这样的外部触发器应该能够让 Agent 从停止的地方恢复，而无需与 Agent 编排器深度集成。
+Agents and their orchestrating deterministic code should be able to pause an agent when a long-running operation is needed.
 
-与[因子 5 - 统一执行状态和业务状态](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-05-unify-execution-state.md)和[因子 8 - 拥有你的控制流](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md)密切相关，但可以独立实现。
+External triggers like webhooks should enable agents to resume from where they left off without deep integration with the agent orchestrator.
 
-**注意** - 通常 AI 编排器会允许暂停和恢复，但不是在工具选择和工具执行之间的时刻。另见[因子 7 - 使用工具调用联系人类](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md)和[因子 11 - 从任何地方触发，在用户所在的地方与他们会面](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-11-trigger-from-anywhere.md)。
+Closely related to [factor 5 - unify execution state and business state](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-05-unify-execution-state.md) and [factor 8 - own your control flow](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md), but can be implemented independently.
 
-[← 统一执行状态](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-05-unify-execution-state.md) | [使用工具联系人类 →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md)
+
+
+**Note** - often AI orchestrators will allow for pause and resume, but not between the moment of tool selection and tool execution. See also [factor 7 - contact humans with tool calls](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md) and [factor 11 - trigger from anywhere, meet users where they are](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-11-trigger-from-anywhere.md).
+
+[← Unify Execution State](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-05-unify-execution-state.md) | [Contact Humans With Tools →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md)
+
+</details>

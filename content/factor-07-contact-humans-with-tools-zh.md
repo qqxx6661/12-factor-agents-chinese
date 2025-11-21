@@ -1,22 +1,33 @@
-[← 返回 README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+<!-- [机器翻译] 此文件由机器翻译生成，需要人工审校。原英文内容保留在文末供参考。 -->
 
-### 7. 使用工具调用联系人类
+# 因素 7：通过工具调用联系人类
 
-默认情况下，LLM API 依赖于一个根本性的高风险 token 选择：我们是返回纯文本内容，还是返回结构化数据？
+> **注意**: 本文档为机器翻译版本，可能包含翻译错误或不准确之处。建议参考文末的英文原文。
+
+---
+
+<details>
+<summary>📖 查看英文原文 (View Original English)</summary>
+
+[← Back to README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+
+### 7. Contact humans with tool calls
+
+By default, LLM APIs rely on a fundamental HIGH-STAKES token choice: Are we returning plaintext content, or are we returning structured data?
 
 ![170-contact-humans-with-tools](https://github.com/humanlayer/12-factor-agents/blob/main/img/170-contact-humans-with-tools.png)
 
-你在第一个 token 的选择上投入了很大的权重，在 `the weather in tokyo` 案例中，它是
+You're putting a lot of weight on that choice of first token, which, in the `the weather in tokyo` case, is
 
 > "the"
 
-但在 `fetch_weather` 案例中，它是一些表示 JSON 对象开始的特殊 token。
+but in the `fetch_weather` case, it's some special token to denote the start of a JSON object.
 
 > |JSON>
 
-你可能通过让 LLM *总是* 输出 json，然后用一些自然语言 token 如 `request_human_input` 或 `done_for_now`（与"适当的"工具如 `check_weather_in_city` 相对）声明其意图，来获得更好的结果。
+You might get better results by having the LLM *always* output json, and then declare it's intent with some natural language tokens like `request_human_input` or `done_for_now` (as opposed to a "proper" tool like `check_weather_in_city`). 
 
-同样，你可能不会从中获得任何性能提升，但你应该实验，并确保你可以自由地尝试奇怪的东西来获得最佳结果。
+Again, you might not get any performance boost from this, but you should experiment, and ensure you're free to try weird stuff to get the best results.
 
 ```python
 
@@ -25,14 +36,14 @@ class Options:
   format: Literal["free_text", "yes_no", "multiple_choice"]
   choices: List[str]
 
-# 人类交互的工具定义
+# Tool definition for human interaction
 class RequestHumanInput:
   intent: "request_human_input"
   question: str
   context: str
   options: Options
 
-# agent 循环中的使用示例
+# Example usage in the agent loop
 if nextStep.intent == 'request_human_input':
   thread.events.append({
     type: 'human_input_requested',
@@ -40,12 +51,12 @@ if nextStep.intent == 'request_human_input':
   })
   thread_id = await save_state(thread)
   await notify_human(nextStep, thread_id)
-  return # 跳出循环并等待响应带着线程 ID 回来
+  return # Break loop and wait for response to come back with thread ID
 else:
-  # ... 其他情况
+  # ... other cases
 ```
 
-稍后，你可能会从处理 slack、电子邮件、短信或其他事件的系统收到 webhook。
+Later, you might receive a webhook from a system that handles slack, email, sms, or other events.
 
 ```python
 
@@ -57,22 +68,22 @@ def webhook(req: Request):
     type: 'response_from_human',
     data: req.body
   })
-  # ... 为了简洁而简化，你可能不想在这里阻塞 web worker
+  # ... simplified for brevity, you likely don't want to block the web worker here
   next_step = await determine_next_step(thread_to_prompt(thread))
   thread.events.append(next_step)
   result = await handle_next_step(thread, next_step)
-  # todo - 循环或跳出或任何你想要的
+  # todo - loop or break or whatever you want
 
   return {"status": "ok"}
 ```
 
-上面的内容包括来自[因子 5 - 统一执行状态和业务状态](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-05-unify-execution-state.md)、[因子 8 - 拥有你的控制流](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md)、[因子 3 - 拥有你的上下文窗口](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md)和[因子 4 - 工具只是结构化输出](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-04-tools-are-structured-outputs.md)以及其他几个的模式。
+The above includes patterns from [factor 5 - unify execution state and business state](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-05-unify-execution-state.md), [factor 8 - own your control flow](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md), [factor 3 - own your context window](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md), and [factor 4 - tools are just structured outputs](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-04-tools-are-structured-outputs.md), and several others.
 
-如果我们使用来自[因子 3 - 拥有你的上下文窗口](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md)的 XML 格式，我们在几轮之后的上下文窗口可能看起来像这样：
+If we were using the XML-y formatted from [factor 3 - own your context window](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md), our context window after a few turns might look like this:
 
 ```xml
 
-(为了简洁而省略)
+(snipped for brevity)
 
 <slack_message>
     From: @alex
@@ -111,18 +122,22 @@ def webhook(req: Request):
 </deploy_backend_result>
 ```
 
-好处：
 
-1. **明确指令**：用于不同类型人类联系的工具允许 LLM 更具体
-2. **内循环 vs 外循环**：使 agent 工作流程能够在传统的 chatGPT 风格界面**之外**运行，其中控制流程和上下文初始化可能是 `Agent->Human` 而不是 `Human->Agent`（想想，由 cron 或事件启动的 agent）
-3. **多人访问**：可以通过结构化事件轻松跟踪和协调来自不同人类的输入
-4. **多 Agent**：简单的抽象可以轻松扩展以支持 `Agent->Agent` 请求和响应
-5. **持久**：与[因子 6 - 使用简单 API 启动/暂停/恢复](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-06-launch-pause-resume.md)结合，这使得持久、可靠和可内省的多人工作流程成为可能
+Benefits:
 
-[更多关于外循环 Agent 的信息在这里](https://theouterloop.substack.com/p/openais-realtime-api-is-a-step-towards)
+1. **Clear Instructions**: Tools for different types of human contact allow for more specificity from the LLM
+2. **Inner vs Outer Loop**: Enables agents workflows **outside** of the traditional chatGPT-style interface, where the control flow and context initialization may be `Agent->Human` rather than `Human->Agent` (think, agents kicked off by a cron or an event)
+3. **Multiple Human Access**: Can easily track and coordinate input from different humans through structured events
+4. **Multi-Agent**: Simple abstraction can be easily extended to support `Agent->Agent` requests and responses
+5. **Durable**: Combined with [factor 6 - launch/pause/resume with simple APIs](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-06-launch-pause-resume.md), this makes for durable, reliable, and introspectable multiplayer workflows
+
+[More on Outer Loop Agents over here](https://theouterloop.substack.com/p/openais-realtime-api-is-a-step-towards)
 
 ![175-outer-loop-agents](https://github.com/humanlayer/12-factor-agents/blob/main/img/175-outer-loop-agents.png)
 
-与[因子 11 - 从任何地方触发，在用户所在的地方与他们会面](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-11-trigger-from-anywhere.md)配合得很好
+Works great with [factor 11 - trigger from anywhere, meet users where they are](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-11-trigger-from-anywhere.md)
 
-[← 启动/暂停/恢复](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-06-launch-pause-resume.md) | [拥有你的控制流 →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md)
+[← Launch/Pause/Resume](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-06-launch-pause-resume.md) | [Own Your Control Flow →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md)
+
+
+</details>

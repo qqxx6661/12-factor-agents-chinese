@@ -1,25 +1,39 @@
-[← 返回 README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+<!-- [机器翻译] 此文件由机器翻译生成，需要人工审校。原英文内容保留在文末供参考。 -->
 
-### 8. 拥有你的控制流
+# 因素 8：拥有你的控制流
 
-如果你拥有自己的控制流，你可以做很多有趣的事情。
+> **注意**: 本文档为机器翻译版本，可能包含翻译错误或不准确之处。建议参考文末的英文原文。
+
+---
+
+<details>
+<summary>📖 查看英文原文 (View Original English)</summary>
+
+[← Back to README](https://github.com/humanlayer/12-factor-agents/blob/main/README.md)
+
+### 8. Own your control flow
+
+If you own your control flow, you can do lots of fun things.
 
 ![180-control-flow](https://github.com/humanlayer/12-factor-agents/blob/main/img/180-control-flow.png)
 
-构建适合你特定用例的控制结构。具体来说，某些类型的工具调用可能是跳出循环并等待人工响应或其他长时间运行任务（如训练管道）响应的理由。你也可能希望纳入以下的自定义实现：
 
-- 工具调用结果的总结或缓存
-- LLM 作为结构化输出的判断者
-- 上下文窗口压缩或其他[内存管理](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md)
-- 日志记录、跟踪和指标
-- 客户端速率限制
-- 持久睡眠/暂停/"等待事件"
+Build your own control structures that make sense for your specific use case. Specifically, certain types of tool calls may be reason to break out of the loop and wait for a response from a human or another long-running task like a training pipeline. You may also want to incorporate custom implementation of:
 
-下面的示例显示了三种可能的控制流模式：
+- summarization or caching of tool call results
+- LLM-as-judge on structured output
+- context window compaction or other [memory management](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-03-own-your-context-window.md)
+- logging, tracing, and metrics
+- client-side rate limiting
+- durable sleep / pause / "wait for event"
 
-- request_clarification：模型请求更多信息，跳出循环并等待人工响应
-- fetch_git_tags：模型请求 git 标签列表，获取标签，追加到上下文窗口，并直接传回模型
-- deploy_backend：模型请求部署后端，这是高风险操作，所以跳出循环并等待人工批准
+
+The below example shows three possible control flow patterns:
+
+
+- request_clarification: model asked for more info, break the loop and wait for a response from a human
+- fetch_git_tags: model asked for a list of git tags, fetch the tags, append to context window, and pass straight back to the model
+- deploy_backend: model asked to deploy a backend, this is a high-stakes thing, so break the loop and wait for human approval
 
 ```python
 def handle_next_step(thread: Thread):
@@ -27,8 +41,8 @@ def handle_next_step(thread: Thread):
   while True:
     next_step = await determine_next_step(thread_to_prompt(thread))
     
-    # 为了清晰而内联 - 实际上你可以将此
-    # 放在方法中，使用异常进行控制流，或任何你想要的方式
+    # inlined for clarity - in reality you could put 
+    # this in a method, use exceptions for control flow, or whatever you want
     if next_step.intent == 'request_clarification':
       thread.events.append({
         type: 'request_clarification',
@@ -37,7 +51,7 @@ def handle_next_step(thread: Thread):
 
       await send_message_to_human(next_step)
       await db.save_thread(thread)
-      # 异步步骤 - 跳出循环，我们稍后会收到 webhook
+      # async step - break the loop, we'll get a webhook later
       break
     elif next_step.intent == 'fetch_open_issues':
       thread.events.append({
@@ -51,7 +65,7 @@ def handle_next_step(thread: Thread):
         type: 'fetch_open_issues_result',
         data: issues,
       })
-      # 同步步骤 - 将新上下文传递给 LLM 以确定下一个下一步
+      # sync step - pass the new context to the LLM to determine the NEXT next step
       continue
     elif next_step.intent == 'create_issue':
       thread.events.append({
@@ -61,20 +75,26 @@ def handle_next_step(thread: Thread):
 
       await request_human_approval(next_step)
       await db.save_thread(thread)
-      # 异步步骤 - 跳出循环，我们稍后会收到 webhook
+      # async step - break the loop, we'll get a webhook later
       break
 ```
 
-这种模式允许你根据需要中断和恢复 agent 的流程，创建更自然的对话和工作流程。
+This pattern allows you to interrupt and resume your agent's flow as needed, creating more natural conversations and workflows.
 
-**示例** - 我对所有 AI 框架的第一大功能请求是我们需要能够中断正在工作的 agent 并稍后恢复，特别是在工具**选择**和工具**调用**之间的时刻。
+**Example** - the number one feature request I have for every AI framework out there is we need to be able to interrupt 
+a working agent and resume later, ESPECIALLY between the moment of tool **selection** and the moment of tool **invocation**.
 
-没有这种级别的可恢复性/粒度，就无法在工具调用运行之前审查/批准它，这意味着你被迫：
+Without this level of resumability/granularity, there's no way to review/approve the tool call before it runs, which means
+you're forced to either:
 
-1. 在等待长时间运行的任务完成时将任务暂停在内存中（想想 `while...sleep`），如果进程被中断则从头开始重启
-2. 将 agent 限制为只能进行低风险、低风险的调用，如研究和总结
-3. 给 agent 访问权限来做更大、更有用的事情，并只是盲目希望它不会搞砸
+1. Pause the task in memory while waiting for the long-running thing to complete (think `while...sleep`) and restart it from the beginning if the process is interrupted
+2. Restrict the agent to only low-stakes, low-risk calls like research and summarization
+3. Give the agent access to do bigger, more useful things, and just yolo hope it doesn't screw up
 
-你可能注意到这与[因子 5 - 统一执行状态和业务状态](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-05-unify-execution-state.md)和[因子 6 - 使用简单 API 启动/暂停/恢复](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-06-launch-pause-resume.md)密切相关，但可以独立实现。
 
-[← 使用工具联系人类](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md) | [压缩错误 →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-09-compact-errors.md)
+You may notice this is closely related to [factor 5 - unify execution state and business state](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-05-unify-execution-state.md) and [factor 6 - launch/pause/resume with simple APIs](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-06-launch-pause-resume.md), but can be implemented independently.
+
+[← Contact Humans With Tools](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-07-contact-humans-with-tools.md) | [Compact Errors →](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-09-compact-errors.md)
+
+
+</details>
